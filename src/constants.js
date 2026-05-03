@@ -4,6 +4,8 @@ export const DEFAULT_MANTRA =
 export const STORAGE_KEYS = {
   entries: 'under-grace:entries',
   mantra: 'under-grace:mantra',
+  manifestationIntention: 'under-grace:manifestation-intention',
+  manifestationDraft: 'under-grace:manifestation-draft',
   theme: 'under-grace:theme',
   settings: 'under-grace:settings',
 }
