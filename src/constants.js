@@ -6,6 +6,8 @@ export const STORAGE_KEYS = {
   mantra: 'under-grace:mantra',
   manifestationIntention: 'under-grace:manifestation-intention',
   manifestationDraft: 'under-grace:manifestation-draft',
+  manifestationTheme: 'under-grace:manifestation-theme',
+  manifestationNextActionPrompt: 'under-grace:manifestation-next-action-prompt',
   theme: 'under-grace:theme',
   settings: 'under-grace:settings',
 }

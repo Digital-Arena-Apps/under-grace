@@ -15,8 +15,36 @@ The app is intentionally simple: no backend, no account, no payments, and no cla
 - Light and dark mode
 - Simple settings panel
 - Local browser persistence with `localStorage`
+- AI-powered mantra generation through a Vercel serverless API route
+- Local mantra fallback if AI generation is unavailable
 
 ## Setup
+
+Create an OpenAI API key from your OpenAI dashboard, then create a local environment file:
+
+```bash
+cp .env.local.example .env.local
+```
+
+On Windows PowerShell:
+
+```powershell
+Copy-Item .env.local.example .env.local
+```
+
+Add your key to `.env.local`:
+
+```bash
+OPENAI_API_KEY=your_openai_api_key_here
+```
+
+For production on Vercel, add `OPENAI_API_KEY` in:
+
+```bash
+Vercel Project Settings -> Environment Variables -> Production
+```
+
+Then install and run the app:
 
 ```bash
 npm install
@@ -34,6 +62,10 @@ http://localhost:5173
 - `npm run dev` starts the local development server.
 - `npm run build` creates a production build.
 - `npm run preview` previews the production build locally.
+
+## AI Mantra Generation
+
+The browser calls `/api/generate-mantra`, a Vercel serverless function that uses the OpenAI Responses API with `gpt-4.1-mini`. The OpenAI API key is read only from `process.env.OPENAI_API_KEY` on the server. Do not add OpenAI keys to client-side code or `VITE_` environment variables.
 
 ## Product Boundaries
 

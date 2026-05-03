@@ -3,6 +3,9 @@ import { CheckCircle2, PenLine, RefreshCw, Save } from 'lucide-react'
 export default function ManifestationBuilder({
   intention,
   generatedMantra,
+  themeLabel,
+  isGenerating,
+  notice,
   onChangeIntention,
   onChangeGeneratedMantra,
   onCreateMantra,
@@ -43,23 +46,30 @@ export default function ManifestationBuilder({
         <button
           type="button"
           onClick={onCreateMantra}
-          disabled={!hasIntention}
+          disabled={!hasIntention || isGenerating}
           className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-lg border border-sage/25 bg-sage/10 px-4 py-3 text-sm font-semibold text-cedar transition hover:-translate-y-0.5 hover:bg-sage/20 focus:outline-none focus:ring-2 focus:ring-sage/40 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 dark:border-sage/25 dark:bg-sage/10 dark:text-shell"
         >
-          <PenLine className="h-4 w-4" />
-          Create my mantra
+          {isGenerating ? <RefreshCw className="h-4 w-4 animate-spin" /> : <PenLine className="h-4 w-4" />}
+          {isGenerating ? 'Creating your mantra...' : 'Create my mantra'}
         </button>
         {hasDraft ? (
           <button
             type="button"
             onClick={onCreateMantra}
+            disabled={!hasIntention || isGenerating}
             className="inline-flex min-h-12 items-center justify-center gap-2 rounded-lg border border-white/60 bg-white/60 px-4 py-3 text-sm font-semibold text-cedar transition hover:-translate-y-0.5 hover:bg-white/80 focus:outline-none focus:ring-2 focus:ring-sage/40 dark:border-white/10 dark:bg-white/10 dark:text-shell dark:hover:bg-white/20"
           >
             <RefreshCw className="h-4 w-4" />
-            Regenerate
+            Try another wording
           </button>
         ) : null}
       </div>
+
+      {notice ? (
+        <p className="mt-4 rounded-lg bg-ember/10 px-4 py-3 text-sm leading-6 text-cedar dark:text-shell/70">
+          {notice}
+        </p>
+      ) : null}
 
       {hasDraft ? (
         <div className="mt-5 rounded-lg border border-sage/20 bg-pearl/75 p-4 dark:border-white/10 dark:bg-dusk/40">
@@ -72,6 +82,11 @@ export default function ManifestationBuilder({
               Saved draft
             </span>
           </div>
+          {themeLabel ? (
+            <p className="mt-3 inline-flex rounded-full border border-sage/20 bg-sage/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-cedar dark:border-white/10 dark:bg-white/10 dark:text-shell/70">
+              {themeLabel}
+            </p>
+          ) : null}
 
           <label className="mt-3 block">
             <span className="sr-only">Edit generated mantra</span>

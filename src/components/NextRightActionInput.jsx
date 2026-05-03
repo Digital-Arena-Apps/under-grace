@@ -1,6 +1,6 @@
 import { ArrowRight, CheckCircle2 } from 'lucide-react'
 
-export default function NextRightActionInput({ value, onChange, repeatComplete }) {
+export default function NextRightActionInput({ value, onChange, repeatComplete, nextActionPrompt }) {
   const isComplete = value.trim().length > 0
   const statusText = isComplete
     ? repeatComplete
@@ -25,6 +25,15 @@ export default function NextRightActionInput({ value, onChange, repeatComplete }
           <ArrowRight className="mt-1 h-6 w-6 shrink-0 text-ember" />
         )}
       </div>
+
+      {nextActionPrompt ? (
+        <div className="mt-5 rounded-lg border border-sage/20 bg-pearl/70 px-4 py-3 text-sm leading-6 text-cedar/80 dark:border-white/10 dark:bg-dusk/40 dark:text-shell/70">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-cedar/60 dark:text-shell/50">
+            Inspired action prompt
+          </p>
+          <p className="mt-1">{nextActionPrompt}</p>
+        </div>
+      ) : null}
 
       <label className="mt-5 block">
         <span className="sr-only">Next right action</span>

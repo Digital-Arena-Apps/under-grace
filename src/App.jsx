@@ -13,7 +13,7 @@ import SettingsPanel from './components/SettingsPanel.jsx'
 import { DEFAULT_MANTRA, DEFAULT_SETTINGS, STORAGE_KEYS } from './constants.js'
 import { ThemeProvider } from './hooks/useTheme.jsx'
 import { useDailyEntries } from './hooks/useDailyEntries.js'
-import { generateManifestationMantra, getMantraVariantCount } from './utils/mantraGenerator.js'
+import { generateLocalManifestation, getMantraVariantCount } from './utils/mantraGenerator.js'
 import { loadFromStorage, saveToStorage } from './utils/storage.js'
 import { calculateStreak } from './utils/streaks.js'
 
@@ -33,7 +33,15 @@ function UnderGraceApp() {
   const [manifestationDraft, setManifestationDraft] = useState(() =>
     loadFromStorage(STORAGE_KEYS.manifestationDraft, ''),
   )
+  const [manifestationTheme, setManifestationTheme] = useState(() =>
+    loadFromStorage(STORAGE_KEYS.manifestationTheme, ''),
+  )
+  const [manifestationNextActionPrompt, setManifestationNextActionPrompt] = useState(() =>
+    loadFromStorage(STORAGE_KEYS.manifestationNextActionPrompt, ''),
+  )
   const [mantraVariant, setMantraVariant] = useState(0)
+  const [isGeneratingMantra, setIsGeneratingMantra] = useState(false)
+  const [generationNotice, setGenerationNotice] = useState('')
   const [repeatCount, setRepeatCount] = useState(0)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [settings, setSettings] = useState(() => loadFromStorage(STORAGE_KEYS.settings, DEFAULT_SETTINGS))
@@ -64,6 +72,14 @@ function UnderGraceApp() {
   }, [manifestationDraft])
 
   useEffect(() => {
+    saveToStorage(STORAGE_KEYS.manifestationTheme, manifestationTheme)
+  }, [manifestationTheme])
+
+  useEffect(() => {
+    saveToStorage(STORAGE_KEYS.manifestationNextActionPrompt, manifestationNextActionPrompt)
+  }, [manifestationNextActionPrompt])
+
+  useEffect(() => {
     setRepeatCount(todayEntry.completedMorningRitual ? 3 : 0)
   }, [todayEntry.date, todayEntry.completedMorningRitual])
 
@@ -77,10 +93,47 @@ function UnderGraceApp() {
     setSettings((current) => ({ ...current, ...updates }))
   }
 
-  function handleCreateManifestationMantra() {
-    const nextMantra = generateManifestationMantra(manifestationIntention, mantraVariant)
-    setManifestationDraft(nextMantra)
-    setMantraVariant((current) => (current + 1) % getMantraVariantCount())
+  async function handleCreateManifestationMantra() {
+    const cleanIntention = manifestationIntention.trim()
+
+    if (!cleanIntention || isGeneratingMantra) {
+      return
+    }
+
+    setIsGeneratingMantra(true)
+    setGenerationNotice('')
+
+    try {
+      const response = await fetch('/api/generate-mantra', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ intention: cleanIntention }),
+      })
+
+      const data = await response.json().catch(() => ({}))
+
+      if (!response.ok || !data.mantra) {
+        throw new Error(data.error || 'Unable to create an AI mantra right now.')
+      }
+
+      setManifestationDraft(data.mantra)
+      setManifestationTheme(data.theme || 'Personal intention')
+      setManifestationNextActionPrompt(
+        data.nextActionPrompt || 'What is one gentle, practical action that supports this intention today?',
+      )
+    } catch {
+      const fallback = generateLocalManifestation(cleanIntention, mantraVariant)
+
+      setManifestationDraft(fallback.mantra)
+      setManifestationTheme(fallback.theme)
+      setManifestationNextActionPrompt(fallback.nextActionPrompt)
+      setMantraVariant((current) => (current + 1) % getMantraVariantCount())
+      setGenerationNotice('AI generation was unavailable, so a local mantra was created instead.')
+    } finally {
+      setIsGeneratingMantra(false)
+    }
   }
 
   function handleUseGeneratedMantra() {
@@ -113,6 +166,9 @@ function UnderGraceApp() {
           <ManifestationBuilder
             intention={manifestationIntention}
             generatedMantra={manifestationDraft}
+            themeLabel={manifestationTheme}
+            isGenerating={isGeneratingMantra}
+            notice={generationNotice}
             onChangeIntention={setManifestationIntention}
             onChangeGeneratedMantra={setManifestationDraft}
             onCreateMantra={handleCreateManifestationMantra}
@@ -130,6 +186,7 @@ function UnderGraceApp() {
             <NextRightActionInput
               value={todayEntry.nextRightAction}
               repeatComplete={repeatsComplete}
+              nextActionPrompt={manifestationNextActionPrompt}
               onChange={(nextRightAction) => updateToday({ nextRightAction })}
             />
           </div>
