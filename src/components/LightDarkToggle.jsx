@@ -9,7 +9,7 @@ export default function LightDarkToggle() {
     <button
       type="button"
       onClick={toggleTheme}
-      className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/60 bg-white/60 text-cedar shadow-innerCalm transition hover:-translate-y-0.5 hover:bg-white/80 focus:outline-none focus:ring-2 focus:ring-sage/55 dark:border-white/10 dark:bg-white/8 dark:text-shell dark:hover:bg-white/14"
+      className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/60 bg-white/60 text-cedar shadow-innerCalm transition hover:-translate-y-0.5 hover:bg-white/80 focus:outline-none focus:ring-2 focus:ring-sage/50 dark:border-white/10 dark:bg-white/10 dark:text-shell dark:hover:bg-white/20"
       aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
       title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
     >

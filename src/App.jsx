@@ -6,6 +6,8 @@ import Header from './components/Header.jsx'
 import HistoryList from './components/HistoryList.jsx'
 import MorningRitual from './components/MorningRitual.jsx'
 import NextRightActionInput from './components/NextRightActionInput.jsx'
+import RitualCompletionCard from './components/RitualCompletionCard.jsx'
+import RitualProgress from './components/RitualProgress.jsx'
 import SettingsPanel from './components/SettingsPanel.jsx'
 import { DEFAULT_MANTRA, DEFAULT_SETTINGS, STORAGE_KEYS } from './constants.js'
 import { ThemeProvider } from './hooks/useTheme.jsx'
@@ -28,6 +30,10 @@ function UnderGraceApp() {
   const [settings, setSettings] = useState(() => loadFromStorage(STORAGE_KEYS.settings, DEFAULT_SETTINGS))
   const { entries, todayEntry, updateToday, clearEntries } = useDailyEntries(mantraText)
   const streakCount = useMemo(() => calculateStreak(entries), [entries])
+  const actionSet = todayEntry.nextRightAction?.trim().length > 0
+  const reflectionSet = todayEntry.eveningReflection?.trim().length > 0
+  const repeatsComplete = repeatCount >= 3 || todayEntry.completedMorningRitual
+  const morningComplete = repeatsComplete && actionSet
 
   useEffect(() => {
     saveToStorage(STORAGE_KEYS.mantra, mantraText)
@@ -65,22 +71,34 @@ function UnderGraceApp() {
   return (
     <AppShell>
       <Header onOpenSettings={() => setSettingsOpen(true)} streakCount={streakCount} />
+      <RitualProgress
+        repeatCount={repeatsComplete ? 3 : repeatCount}
+        actionSet={actionSet}
+        reflectionSet={reflectionSet}
+      />
 
-      <main className="grid flex-1 gap-5 lg:grid-cols-[minmax(0,1.02fr)_minmax(340px,0.68fr)] lg:items-start">
-        <div className="space-y-5">
+      <main className="grid flex-1 gap-4 sm:gap-5 lg:grid-cols-[minmax(0,1.02fr)_minmax(340px,0.68fr)] lg:items-start">
+        <div className="space-y-4 sm:space-y-5">
           <DailyMantraCard mantraText={mantraText} onChangeMantra={setMantraText} />
 
-          <div className="grid gap-5 md:grid-cols-2">
+          <div className="grid gap-4 sm:gap-5 md:grid-cols-2">
             <MorningRitual
               repeatCount={repeatCount}
               onRepeat={handleRepeat}
-              completed={todayEntry.completedMorningRitual}
+              completed={repeatsComplete}
             />
             <NextRightActionInput
               value={todayEntry.nextRightAction}
+              repeatComplete={repeatsComplete}
               onChange={(nextRightAction) => updateToday({ nextRightAction })}
             />
           </div>
+
+          <RitualCompletionCard
+            repeatCount={repeatsComplete ? 3 : repeatCount}
+            actionSet={actionSet}
+            complete={morningComplete}
+          />
 
           {settings.showEveningSection ? (
             <EveningReflectionInput
@@ -90,15 +108,15 @@ function UnderGraceApp() {
           ) : null}
         </div>
 
-        <aside className="space-y-5">
-          <section className="rounded-lg border border-white/62 bg-white/62 p-5 shadow-calm shadow-innerCalm backdrop-blur-xl dark:border-white/10 dark:bg-white/8">
+        <aside className="space-y-4 sm:space-y-5">
+          <section className="rounded-lg border border-white/60 bg-white/60 p-5 shadow-calm shadow-innerCalm backdrop-blur-xl dark:border-white/10 dark:bg-white/10">
             <p className="text-xs font-semibold uppercase tracking-[0.26em] text-cedar/70 dark:text-shell/70">
               Today
             </p>
             <div className="mt-4 grid grid-cols-3 gap-3">
               <Metric label="Repeats" value={`${repeatCount}/3`} />
               <Metric label="Streak" value={streakCount} />
-              <Metric label="Action" value={todayEntry.nextRightAction?.trim() ? 'Set' : 'Open'} />
+              <Metric label="Status" value={morningComplete ? 'Done' : 'Open'} />
             </div>
           </section>
 
@@ -123,9 +141,9 @@ function UnderGraceApp() {
 
 function Metric({ label, value }) {
   return (
-    <div className="rounded-lg border border-sage/16 bg-pearl/74 px-3 py-4 text-center dark:border-white/10 dark:bg-dusk/42">
+    <div className="rounded-lg border border-sage/20 bg-pearl/75 px-3 py-4 text-center dark:border-white/10 dark:bg-dusk/40">
       <p className="text-2xl font-semibold text-ink dark:text-pearl">{value}</p>
-      <p className="mt-1 text-xs font-semibold uppercase tracking-[0.14em] text-cedar/58 dark:text-shell/48">{label}</p>
+      <p className="mt-1 text-xs font-semibold uppercase tracking-[0.14em] text-cedar/60 dark:text-shell/50">{label}</p>
     </div>
   )
 }
