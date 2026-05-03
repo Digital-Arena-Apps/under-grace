@@ -52,7 +52,7 @@ function ProgressStep({ index, label, detail, icon: Icon, complete }) {
         <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-white/60 shadow-innerCalm dark:bg-white/10">
           <Icon className="h-4 w-4" />
         </span>
-        {complete ? <Check className="h-4 w-4 text-sage" /> : <Circle className="h-4 w-4 opacity-55" />}
+        {complete ? <Check className="h-4 w-4 text-sage" /> : <Circle className="h-4 w-4 opacity-50" />}
       </div>
       <p className="mt-3 text-[0.65rem] font-semibold uppercase tracking-[0.18em] opacity-70">Step {index}</p>
       <p className="mt-1 font-semibold text-ink dark:text-pearl">{label}</p>

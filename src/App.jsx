@@ -4,6 +4,7 @@ import DailyMantraCard from './components/DailyMantraCard.jsx'
 import EveningReflectionInput from './components/EveningReflectionInput.jsx'
 import Header from './components/Header.jsx'
 import HistoryList from './components/HistoryList.jsx'
+import ManifestationBuilder from './components/ManifestationBuilder.jsx'
 import MorningRitual from './components/MorningRitual.jsx'
 import NextRightActionInput from './components/NextRightActionInput.jsx'
 import RitualCompletionCard from './components/RitualCompletionCard.jsx'
@@ -12,6 +13,7 @@ import SettingsPanel from './components/SettingsPanel.jsx'
 import { DEFAULT_MANTRA, DEFAULT_SETTINGS, STORAGE_KEYS } from './constants.js'
 import { ThemeProvider } from './hooks/useTheme.jsx'
 import { useDailyEntries } from './hooks/useDailyEntries.js'
+import { generateManifestationMantra, getMantraVariantCount } from './utils/mantraGenerator.js'
 import { loadFromStorage, saveToStorage } from './utils/storage.js'
 import { calculateStreak } from './utils/streaks.js'
 
@@ -25,6 +27,13 @@ export default function App() {
 
 function UnderGraceApp() {
   const [mantraText, setMantraText] = useState(() => loadFromStorage(STORAGE_KEYS.mantra, DEFAULT_MANTRA))
+  const [manifestationIntention, setManifestationIntention] = useState(() =>
+    loadFromStorage(STORAGE_KEYS.manifestationIntention, ''),
+  )
+  const [manifestationDraft, setManifestationDraft] = useState(() =>
+    loadFromStorage(STORAGE_KEYS.manifestationDraft, ''),
+  )
+  const [mantraVariant, setMantraVariant] = useState(0)
   const [repeatCount, setRepeatCount] = useState(0)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [settings, setSettings] = useState(() => loadFromStorage(STORAGE_KEYS.settings, DEFAULT_SETTINGS))
@@ -47,6 +56,14 @@ function UnderGraceApp() {
   }, [settings])
 
   useEffect(() => {
+    saveToStorage(STORAGE_KEYS.manifestationIntention, manifestationIntention)
+  }, [manifestationIntention])
+
+  useEffect(() => {
+    saveToStorage(STORAGE_KEYS.manifestationDraft, manifestationDraft)
+  }, [manifestationDraft])
+
+  useEffect(() => {
     setRepeatCount(todayEntry.completedMorningRitual ? 3 : 0)
   }, [todayEntry.date, todayEntry.completedMorningRitual])
 
@@ -58,6 +75,20 @@ function UnderGraceApp() {
 
   function updateSettings(updates) {
     setSettings((current) => ({ ...current, ...updates }))
+  }
+
+  function handleCreateManifestationMantra() {
+    const nextMantra = generateManifestationMantra(manifestationIntention, mantraVariant)
+    setManifestationDraft(nextMantra)
+    setMantraVariant((current) => (current + 1) % getMantraVariantCount())
+  }
+
+  function handleUseGeneratedMantra() {
+    const nextMantra = manifestationDraft.trim()
+
+    if (nextMantra) {
+      setMantraText(nextMantra)
+    }
   }
 
   const historicalEntries = entries.filter(
@@ -79,6 +110,15 @@ function UnderGraceApp() {
 
       <main className="grid flex-1 gap-4 sm:gap-5 lg:grid-cols-[minmax(0,1.02fr)_minmax(340px,0.68fr)] lg:items-start">
         <div className="space-y-4 sm:space-y-5">
+          <ManifestationBuilder
+            intention={manifestationIntention}
+            generatedMantra={manifestationDraft}
+            onChangeIntention={setManifestationIntention}
+            onChangeGeneratedMantra={setManifestationDraft}
+            onCreateMantra={handleCreateManifestationMantra}
+            onUseMantra={handleUseGeneratedMantra}
+          />
+
           <DailyMantraCard mantraText={mantraText} onChangeMantra={setMantraText} />
 
           <div className="grid gap-4 sm:gap-5 md:grid-cols-2">
